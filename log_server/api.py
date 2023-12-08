@@ -21,59 +21,41 @@ log_server_cache_service = LogServerCacheService()
 @app.get("/")
 def root():
     return {
-        "i": "/i/{id}/{path}",
-        "o": "/o",
-        "_clear": "/_clear",
-        "description": "A simple server to logs requests. Send to /i/<id>/<path> and view at /o/<id>/<path>"
+        "/": "/",
+        "./*": [
+            "/i/{path}",
+            "/o",
+            "/_clear",
+        ],
+        "description": "A simple server to logs requests. Send to /i/<id>/<path> and view at /o/<id>/<path>",
+        "repo": "https://www.github.com/haynesgt/log-server",
     }
 
 @app.get("/_clear")
 def clear():
     log_server_cache_service.clear()
     return {
-        "root": "/",
+        "/": "/",
         "message": "cleared",
     }
 
-@app.get("/o")
-def get_ids():
-    return {
-        "root": "/",
-        "ids": [
-            "/o/" + id
-            for id in
-            log_server_cache_service.get_ids()
-        ]
-    }
-
-@app.get("/o/{id}")
-def get_paths_for_id(id: str):
-    return {
-        "root": "/",
-        "paths": [
-            "/o/" + id + "/" + path
-            for path in
-            log_server_cache_service.get_paths(id)
-        ]
-    }
-
-@app.get("/o/{id}/{path:path}")
-def get_requests_for_path(id: str, path: str):
-    requests = log_server_cache_service.get_requests(id, path)[-10:]
+@app.get("/o/{path:path}")
+def get_requests_for_path(path: str):
+    requests = log_server_cache_service.get_requests(path)[-10:]
     requests.reverse()
+    previous_path = "/".join(path.split("/")[:-1])
     return {
-        "root": "/",
-        "o/{id}": "/o/" + id,
-        "requests": requests
+        "/": "/",
+        "..": "/o/" + previous_path,
+        "requests": requests,
     }
 
-@app.api_route("/i/{id}/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
-async def save_request(id: str, path: str, request: Request):
+@app.api_route("/i/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
+async def save_request(path: str, request: Request):
     now = datetime.utcnow()
-    await log_server_cache_service.save_request(id, path, request, now)
+    await log_server_cache_service.save_request(path, request, now)
     return {
-        "root": "/",
+        "/": "/",
+        ".": "/o/" + path,
         "ts": now.isoformat(),
-        "o/{id}": "/o/" + id,
-        "o/{id}/{path:path}": "/o/" + id + "/" + path,
     }

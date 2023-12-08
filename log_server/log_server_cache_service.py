@@ -16,9 +16,7 @@ class LogServerCacheRequestData(TypedDict):
 
 LogServerCachePathData = list[LogServerCacheRequestData]
 
-LogServerCacheIdData = dict[str, LogServerCachePathData]
-
-LogServerCacheData = dict[str, LogServerCacheIdData]
+LogServerCacheData = dict[str, LogServerCachePathData]
 
 # debounce decorator which calls fn after delay seconds if it was called recently
 # or otherwise calls it immediately
@@ -69,9 +67,8 @@ class LogServerCacheService:
         self.cache = {}
         self.save_to_file()
 
-    async def save_request(self, id: str, path: str, request: Request, now: datetime = datetime.utcnow()):
-        self.cache.setdefault(id, {})
-        self.cache[id].setdefault(path, [])
+    async def save_request(self, path: str, request: Request, now: datetime = datetime.utcnow()):
+        self.cache.setdefault(path, [])
 
         serialized_request = {
             "ts": now.isoformat(),
@@ -88,14 +85,17 @@ class LogServerCacheService:
             serialized_request["json"] = await request.json()
         else:
             serialized_request["body"] = (await request.body()).decode("utf-8")
-        self.cache[id][path].append(serialized_request)
+        self.cache[path].append(serialized_request)
         self.save_to_file()
     
     def get_ids(self) -> list[str]:
         return self.cache.keys()
 
-    def get_paths(self, id: str) -> list[str]:
-        return [path for path in self.cache.get(id, {}).keys()]
+    def get_paths(self) -> list[str]:
+        return [path for path in self.cache.keys()]
 
-    def get_requests(self, id: str, path) -> LogServerCachePathData:
-        return self.cache.get(id, {}).get(path, [])
+    def get_requests(self, path) -> LogServerCachePathData:
+        return self.cache.get(path, [])
+    
+    def get_subpaths(self, path) -> list[str]:
+        return [subpath for subpath in self.cache.keys() if subpath.startswith(path)]
