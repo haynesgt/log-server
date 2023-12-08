@@ -95,6 +95,7 @@ class LogServerCacheService:
 
     def clear(self):
         self.request_cache = {}
+        self.path_cache = {}
         self.save_to_file()
 
     async def save_request(
