@@ -83,10 +83,11 @@ class LogServerCacheService:
             "url": str(request.url),
             "path": request.url.path,
             "query_params": str(request.query_params),
-            "body": (await request.body()).decode("utf-8"),
         }
         if "Content-Type" in request.headers and request.headers["Content-Type"] == "application/json":
-            serialized_request["body"] = request.json()
+            serialized_request["json"] = await request.json()
+        else:
+            serialized_request["body"] = (await request.body()).decode("utf-8")
         self.cache[id][path].append(serialized_request)
         self.save_to_file()
     

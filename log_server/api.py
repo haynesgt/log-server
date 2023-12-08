@@ -19,7 +19,7 @@ app = FastAPI()
 log_server_cache_service = LogServerCacheService()
 
 @app.get("/")
-async def root():
+def root():
     return {
         "i": "/i/{id}/{path}",
         "o": "/o",
@@ -27,7 +27,7 @@ async def root():
     }
 
 @app.get("/_clear")
-async def clear():
+def clear():
     log_server_cache_service.clear()
     return {
         "root": "/",
@@ -35,7 +35,7 @@ async def clear():
     }
 
 @app.get("/o")
-async def get_ids():
+def get_ids():
     return {
         "root": "/",
         "ids": [
@@ -46,7 +46,7 @@ async def get_ids():
     }
 
 @app.get("/o/{id}")
-async def get_paths_for_id(id: str):
+def get_paths_for_id(id: str):
     return {
         "root": "/",
         "paths": [
@@ -57,7 +57,7 @@ async def get_paths_for_id(id: str):
     }
 
 @app.get("/o/{id}/{path:path}")
-async def get_requests_for_path(id: str, path: str):
+def get_requests_for_path(id: str, path: str):
     requests = log_server_cache_service.get_requests(id, path)[-10:]
     requests.reverse()
     return {
