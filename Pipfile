@@ -7,8 +7,12 @@ name = "pypi"
 fastapi = "*"
 uvicorn = "*"
 gunicorn = "*"
+httpx = "*"
 
 [dev-packages]
+pytest = "*"
+pyright = "*"
+black = "*"
 
 [requires]
 python_version = "3.11"
