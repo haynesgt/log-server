@@ -24,6 +24,7 @@ def root():
         "i": "/i/{id}/{path}",
         "o": "/o",
         "_clear": "/_clear",
+        "description": "A simple server to logs requests. Send to /i/<id>/<path> and view at /o/<id>/<path>"
     }
 
 @app.get("/_clear")
